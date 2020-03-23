@@ -1,0 +1,37 @@
+log_format vcombined '$host:$server_port '
+        '$remote_addr - $remote_user [$time_local] '
+        '"$request" $status $body_bytes_sent '
+        '"$http_referer" "$http_user_agent"';
+
+server {
+        listen 8081;
+        listen [::]:8081;
+
+
+
+        listen [::]:8444 ssl http2; # managed by Certbot
+        listen 8444 ssl http2; # managed by Certbot
+
+        root /var/www/html;
+
+        ssl_certificate /etc/letsencrypt/live/web2.on2v.com/fullchain.pem; # managed by Certbot
+        ssl_certificate_key /etc/letsencrypt/live/web2.on2v.com/privkey.pem; # managed by Certbot
+        include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+        ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+        server_name  web2.on2v.com;
+
+        access_log   /var/log/nginx/nginx-web.log vcombined;
+
+
+         location ~ \.php$ {
+                 try_files $uri =404;
+                 fastcgi_split_path_info ^(.+\.php)(/.+)$;
+                 fastcgi_pass unix:/run/php/php-fpm.sock;
+                 fastcgi_index index.php;
+                 fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                 include fastcgi_params;
+         }
+ 
+
+}
